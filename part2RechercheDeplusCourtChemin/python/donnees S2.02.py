@@ -4,7 +4,7 @@ import numpy as np
 import os
 
 
-os.chdir('C:\INFO\S2.02 chemins bayonne')
+os.chdir('C:\\Cours\\1EreAnnee\\2EmeSemestre\\S2.02\\part2RechercheDeplusCourtChemin\\donnees')
 
 # import dicsucc.json et dicsuccdist.json (--> dictionnaire)
 with open("dicsucc.json", "r") as fichier:
@@ -38,3 +38,4 @@ for i in range(len(tableau_poids)):
 
 
 del fichier, i, j, val, ls, lst, ind 
+
