@@ -39,3 +39,52 @@ for i in range(len(tableau_poids)):
 
 del fichier, i, j, val, ls, lst, ind 
 
+def charger_graphes():
+    with open("dicsucc.json", "r") as fichier:
+        successeurs = json.load(fichier)
+    with open("dicsuccdist.json", "r") as fichier:
+        distances = json.load(fichier)
+    return successeurs, distances
+
+def transformer_distances(distances):
+    transforme = {}
+    for noeud, aretes in distances.items():
+        transforme[str(noeud)] = {str(arete[0]): arete[1] for arete in aretes}
+    return transforme
+
+def dijkstra(depart, arrivee):
+    successeurs, distances_brutes = charger_graphes()
+    distances = transformer_distances(distances_brutes)
+
+    depart, arrivee = str(depart), str(arrivee)
+    distances_minimales = {str(noeud): float('inf') for noeud in successeurs}
+    predecesseur = {str(noeud): None for noeud in successeurs}
+    distances_minimales[depart] = 0
+
+    non_visites = set(successeurs.keys())
+
+    while non_visites:
+        noeud_courant = min(non_visites, key=lambda noeud: distances_minimales[noeud])
+        if distances_minimales[noeud_courant] == float('inf'):
+            break
+
+        for voisin in successeurs[noeud_courant]:
+            if str(voisin) in distances[noeud_courant]:
+                distance = distances_minimales[noeud_courant] + distances[noeud_courant][str(voisin)]
+                if distance < distances_minimales[voisin]:
+                    distances_minimales[voisin] = distance
+                    predecesseur[voisin] = noeud_courant
+
+        non_visites.remove(noeud_courant)
+
+    chemin = []
+    etape = arrivee
+    while etape is not None:
+        chemin.append(etape)
+        etape = predecesseur[etape]
+    chemin.reverse()
+
+    return chemin, distances_minimales[arrivee]
+chemin, distance = dijkstra(8947020815, 179717708)
+print(chemin)
+print(distance)
