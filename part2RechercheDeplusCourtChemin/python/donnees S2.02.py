@@ -2,6 +2,7 @@ import json
 import pandas as pd
 import numpy as np
 import os
+import sys
 
 
 os.chdir('C:\\Cours\\1EreAnnee\\2EmeSemestre\\S2.02\\part2RechercheDeplusCourtChemin\\donnees')
@@ -39,52 +40,64 @@ for i in range(len(tableau_poids)):
 
 del fichier, i, j, val, ls, lst, ind 
 
-def charger_graphes():
-    with open("dicsucc.json", "r") as fichier:
-        successeurs = json.load(fichier)
-    with open("dicsuccdist.json", "r") as fichier:
-        distances = json.load(fichier)
-    return successeurs, distances
+def transformer_graphe_en_dictionnaire(graphe):
+    nouveau_graphe = {}
+    for sommet_str, voisins in graphe.items():
+        sommet_int = int(sommet_str)     
+        nouveau_graphe[sommet_int] = {}  
+        for voisin, poids in voisins:
+            nouveau_graphe[sommet_int][voisin] = poids  
+    return nouveau_graphe
+dicsuccdistInt = transformer_graphe_en_dictionnaire(dicsuccdist)
 
-def transformer_distances(distances):
-    transforme = {}
-    for noeud, aretes in distances.items():
-        transforme[str(noeud)] = {str(arete[0]): arete[1] for arete in aretes}
-    return transforme
 
 def dijkstra(depart, arrivee):
-    successeurs, distances_brutes = charger_graphes()
-    distances = transformer_distances(distances_brutes)
+    depart = int(depart)
+    arrivee = int(arrivee)
 
-    depart, arrivee = str(depart), str(arrivee)
-    distances_minimales = {str(noeud): float('inf') for noeud in successeurs}
-    predecesseur = {str(noeud): None for noeud in successeurs}
-    distances_minimales[depart] = 0
+    # Création d'un ensemble unique de tous les nœuds présents dans dicsucc et dicsuccdistInt
+    all_nodes = set(dicsucc.keys()) | {node for subdict in dicsuccdistInt.values() for node in subdict.keys()}
 
-    non_visites = set(successeurs.keys())
+    # Initialisation des distances
+    distances = {noeud: float('inf') for noeud in all_nodes}
+    distances[depart] = 0
 
-    while non_visites:
-        noeud_courant = min(non_visites, key=lambda noeud: distances_minimales[noeud])
-        if distances_minimales[noeud_courant] == float('inf'):
+    # Dictionnaire pour suivre le noeud précédent
+    noeuds_precedents = {noeud: None for noeud in all_nodes}
+
+    # Liste des noeuds à visiter
+    noeuds_a_visiter = [depart]
+
+    while noeuds_a_visiter:
+        # Sélection du noeud avec la distance minimale
+        noeud_courant = min(noeuds_a_visiter, key=lambda noeud: distances[noeud])
+        noeuds_a_visiter.remove(noeud_courant)
+
+        # Arrêt si le noeud courant est l'arrivée
+        if noeud_courant == arrivee:
             break
 
-        for voisin in successeurs[noeud_courant]:
-            if str(voisin) in distances[noeud_courant]:
-                distance = distances_minimales[noeud_courant] + distances[noeud_courant][str(voisin)]
-                if distance < distances_minimales[voisin]:
-                    distances_minimales[voisin] = distance
-                    predecesseur[voisin] = noeud_courant
+        # Exploration des voisins
+        for voisin, distance in dicsuccdistInt.get(noeud_courant, {}).items():
+            if voisin in distances:
+                nouvelle_distance = distances[noeud_courant] + distance
+                if nouvelle_distance < distances[voisin]:
+                    distances[voisin] = nouvelle_distance
+                    noeuds_precedents[voisin] = noeud_courant
+                    if voisin not in noeuds_a_visiter:
+                        noeuds_a_visiter.append(voisin)
 
-        non_visites.remove(noeud_courant)
+    # Reconstruction du chemin le plus court
+    chemin, noeud_courant = [], arrivee
+    while noeud_courant is not None:
+        chemin.insert(0, noeud_courant)
+        noeud_courant = noeuds_precedents[noeud_courant]
 
-    chemin = []
-    etape = arrivee
-    while etape is not None:
-        chemin.append(etape)
-        etape = predecesseur[etape]
-    chemin.reverse()
+    # Obtention de la distance minimale
+    distance_minimale = distances[arrivee]
+    return chemin, distance_minimale
 
-    return chemin, distances_minimales[arrivee]
-chemin, distance = dijkstra(8947020815, 179717708)
-print(chemin)
-print(distance)
+# Exemple d'utilisation
+chemin, distance = dijkstra(1806175538, 1801848709)
+print("Chemin le plus court :", chemin)
+print("Distance minimale :", distance)
