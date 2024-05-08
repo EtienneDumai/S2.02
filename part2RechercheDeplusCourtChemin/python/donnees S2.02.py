@@ -98,3 +98,43 @@ def dijkstra(depart, arrivee):
 chemin, distance = dijkstra(1806175538, 1801848709)
 print("Chemin le plus court :", chemin)
 print("Distance minimale :", distance)
+
+def bellman_ford(depart, arrivee):
+    depart = int(depart)
+    arrivee = int(arrivee)
+
+    # Initialisation des distances pour tous les nœuds mentionnés dans dicsuccdistInt
+    distances = {noeud: float('inf') for noeud in set(dicsucc) | {voisin for values in dicsuccdistInt.values() for voisin in values}}
+    distances[depart] = 0
+
+    # Initialisation du dictionnaire pour suivre les noeuds précédents dans le chemin optimal
+    noeuds_precedents = {noeud: None for noeud in distances}
+
+    # Relaxation des arêtes |V|-1 fois (V étant le nombre de nœuds dans le graphe)
+    for _ in range(len(distances) - 1):
+        for noeud in dicsuccdistInt:
+            for voisin, poids in dicsuccdistInt[noeud].items():
+                if distances[noeud] + poids < distances[voisin]:
+                    distances[voisin] = distances[noeud] + poids
+                    noeuds_precedents[voisin] = noeud
+
+    # Vérification de l'existence de cycles de poids négatif
+    for noeud in dicsuccdistInt:
+        for voisin, poids in dicsuccdistInt[noeud].items():
+            if distances[noeud] + poids < distances[voisin]:
+                raise ValueError("Le graphe contient un cycle de poids négatif")
+
+    # Reconstruction du chemin le plus court
+    chemin, noeud_courant = [], arrivee
+    while noeud_courant is not None:
+        chemin.insert(0, noeud_courant)
+        noeud_courant = noeuds_precedents[noeud_courant]
+
+    # Obtention de la distance minimale pour atteindre 'arrivee'
+    distance_minimale = distances[arrivee]
+    return chemin, distance_minimale
+
+# Exemple d'utilisation
+chemin, distance = bellman_ford(1806175538, 1801848709)
+print("Chemin le plus court :", chemin)
+print("Distance minimale :", distance)
