@@ -55,15 +55,12 @@ def dijkstra(depart, arrivee):
     depart = int(depart)
     arrivee = int(arrivee)
 
-    # Création d'un ensemble unique de tous les nœuds présents dans dicsucc et dicsuccdistInt
-    all_nodes = set(dicsucc.keys()) | {node for subdict in dicsuccdistInt.values() for node in subdict.keys()}
-
-    # Initialisation des distances
-    distances = {noeud: float('inf') for noeud in all_nodes}
+    # Initialisation des distances pour tous les nœuds mentionnés dans dicsucc et dicsuccdistInt
+    distances = {noeud: float('inf') for noeud in set(dicsucc) | {voisin for values in dicsuccdistInt.values() for voisin in values}}
     distances[depart] = 0
 
     # Dictionnaire pour suivre le noeud précédent
-    noeuds_precedents = {noeud: None for noeud in all_nodes}
+    noeuds_precedents = {noeud: None for noeud in distances}
 
     # Liste des noeuds à visiter
     noeuds_a_visiter = [depart]
