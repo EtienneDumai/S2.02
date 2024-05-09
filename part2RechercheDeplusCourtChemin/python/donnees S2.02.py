@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import os
 import sys
-
+import random as r
 
 os.chdir('C:\\Cours\\1EreAnnee\\2EmeSemestre\\S2.02\\part2RechercheDeplusCourtChemin\\donnees')
 
@@ -50,6 +50,19 @@ def transformer_graphe_en_dictionnaire(graphe):
     return nouveau_graphe
 dicsuccdistInt = transformer_graphe_en_dictionnaire(dicsuccdist)
 
+def point_alea():
+    keys = list(dicsuccdistInt.keys())
+    nombre_alea = 0
+    cle_alea1= 0
+    cle_alea2 = 0
+    while True:
+        nombre_alea = r.randint(0,1883)
+        cle_alea1 = keys[nombre_alea]
+        nombre_alea = r.randint(0, 1883)
+        cle_alea2 = keys[nombre_alea]
+        if cle_alea1 != cle_alea2:
+            break
+    return cle_alea1, cle_alea2
 
 def dijkstra(depart, arrivee):
     depart = int(depart)
@@ -95,7 +108,10 @@ def dijkstra(depart, arrivee):
     return chemin, distance_minimale
 
 # Exemple d'utilisation
-chemin, distance = dijkstra(1806175538, 1801848709)
+point1Dij, point2Dij = point_alea()
+print(f"Point 1 : ", point1Dij)
+print(f"Point 2 : ", point2Dij)
+chemin, distance = dijkstra(point1Dij, point2Dij)
 print("Chemin le plus court :", chemin)
 print("Distance minimale :", distance)
 
@@ -134,7 +150,18 @@ def bellman_ford(depart, arrivee):
     distance_minimale = distances[arrivee]
     return chemin, distance_minimale
 
+keys = list(dicsuccdistInt.keys())
+for i in keys:
+    print(i)
+
+
+        
+        
+        
 # Exemple d'utilisation
-chemin, distance = bellman_ford(1806175538, 1801848709)
+point1Bell, point2Bell = point_alea()
+print(f"Point 1 : ", point1Bell)
+print(f"Point 2 : ", point2Bell)
+chemin, distance = bellman_ford(point1Bell, point2Bell)
 print("Chemin le plus court :", chemin)
 print("Distance minimale :", distance)
