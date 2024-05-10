@@ -50,15 +50,15 @@ def transformer_graphe_en_dictionnaire(graphe):
     return nouveau_graphe
 dicsuccdistInt = transformer_graphe_en_dictionnaire(dicsuccdist)
 
-def point_alea():
-    keys = list(dicsuccdistInt.keys())
+def point_alea(graphe):
+    keys = list(graphe.keys())
     nombre_alea = 0
     cle_alea1= 0
     cle_alea2 = 0
     while True:
-        nombre_alea = r.randint(0,1883)
+        nombre_alea = r.randint(0,(len(graphe)-1))
         cle_alea1 = keys[nombre_alea]
-        nombre_alea = r.randint(0, 1883)
+        nombre_alea = r.randint(0, (len(graphe)-1))
         cle_alea2 = keys[nombre_alea]
         if cle_alea1 != cle_alea2:
             break
@@ -111,7 +111,7 @@ def dijkstra(depart, arrivee):
 point1Dij, point2Dij = point_alea()
 print(f"Point 1 : ", point1Dij)
 print(f"Point 2 : ", point2Dij)
-chemin, distance = dijkstra(point1Dij, point2Dij)
+chemin, distance = dijkstra(3563710441, 2441623448)
 print("Chemin le plus court :", chemin)
 print("Distance minimale :", distance)
 
@@ -164,4 +164,65 @@ print(f"Point 1 : ", point1Bell)
 print(f"Point 2 : ", point2Bell)
 chemin, distance = bellman_ford(point1Bell, point2Bell)
 print("Chemin le plus court :", chemin)
+print("Distance minimale :", distance)
+
+
+def floyd_warshall(depart, arrivee):
+    depart = int(depart)
+    arrivee = int(arrivee)
+
+    noeuds = set(dicsucc.keys()) | {voisin for subdict in dicsuccdistInt.values() for voisin in subdict}
+    noeuds = list(noeuds)
+    index_noeuds = {noeuds: idx for idx, noeuds in enumerate(noeuds)}
+
+    n = len(noeuds)
+    inf = float('inf')
+    dist = [[inf] * n for _ in range(n)]
+    
+    for i in range(n):
+        dist[i][i] = 0
+
+    for u in dicsuccdistInt:
+        for v, poids in dicsuccdistInt[u].items():
+            i, j = index_noeuds[u], index_noeuds[v]
+            dist[i][j] = poids
+
+    for k in range(n):
+        for i in range(n):
+            for j in range(n):
+                if dist[i][j] > dist[i][k] + dist[k][j]:
+                    dist[i][j] = dist[i][k] + dist[k][j]
+
+    distance_minimale = dist[index_noeuds[depart]][index_noeuds[arrivee]]
+    return distance_minimale if distance_minimale != inf else None
+
+# Exemple d'utilisation
+distance = floyd_warshall(8947020815, 1804838595)
+print("Distance minimale de 8947020815 à 1804838595 :", distance)
+
+# Exemple d'utilisation
+
+
+depart, arrivee = point_alea()  # Suppose que point_alea retourne deux entiers valides
+print("Départ:", depart, "Arrivée:", arrivee)
+
+distance = floyd_warshall(depart, arrivee)
+print("Distance minimale de", depart, "à", arrivee, ":", distance)
+
+def creer_sous_graphe_critere(dicsuccdistInt, critere):
+    # Filtrer les clés selon un critère
+    keys_selected = [key for key, neighbors in dicsuccdistInt.items() if critere(neighbors)]
+    
+    # Construire le sous-graphe
+    sous_graphe = {key: dicsuccdistInt[key] for key in keys_selected}
+    return sous_graphe
+
+# Exemple d'utilisation avec un critère spécifique
+# Supposons que le critère soit d'avoir plus de 5 voisins
+sous_graphe = creer_sous_graphe_critere(dicsuccdistInt, lambda neighbors: len(neighbors) > 3)
+print(sous_graphe)
+point1Floyd, point2Floyd = point_alea(sous_graphe)
+print(f"Point 1 : ", point1Floyd)
+print(f"Point 2 : ", point2Floyd)
+distance = floyd_warshall(point1Floyd, point2Floyd)
 print("Distance minimale :", distance)
