@@ -111,7 +111,7 @@ def dijkstra(depart, arrivee):
 point1Dij, point2Dij = point_alea()
 print(f"Point 1 : ", point1Dij)
 print(f"Point 2 : ", point2Dij)
-chemin, distance = dijkstra(3563710441, 2441623448)
+chemin, distance = dijkstra(8947020815, 1804838595)
 print("Chemin le plus court :", chemin)
 print("Distance minimale :", distance)
 
@@ -171,7 +171,7 @@ def floyd_warshall(depart, arrivee):
     depart = int(depart)
     arrivee = int(arrivee)
 
-    noeuds = set(dicsucc.keys()) | {voisin for subdict in dicsuccdistInt.values() for voisin in subdict}
+    noeuds = set(dicsuccdistInt.keys()) | {voisin for subdict in dicsuccdistInt.values() for voisin in subdict}
     noeuds = list(noeuds)
     index_noeuds = {noeuds: idx for idx, noeuds in enumerate(noeuds)}
 
@@ -225,4 +225,66 @@ point1Floyd, point2Floyd = point_alea(sous_graphe)
 print(f"Point 1 : ", point1Floyd)
 print(f"Point 2 : ", point2Floyd)
 distance = floyd_warshall(point1Floyd, point2Floyd)
+print("Distance minimale :", distance)
+
+
+
+def heuristique(no, arrivee):
+    # Fonction heuristique, à adapter selon le contexte de votre application.
+    # Exemple trivial qui retourne toujours 0.
+    return 0
+
+def a_star(depart, arrivee):
+    depart = int(depart)
+    arrivee = int(arrivee)
+
+    # Initialisation des distances
+    distances = {noeud: float('inf') for noeud in set(dicsuccdistInt.keys()) | {voisin for values in dicsuccdistInt.values() for voisin in values}}
+    distances[depart] = 0
+
+    # Dictionnaire pour suivre le noeud précédent
+    noeuds_precedents = {noeud: None for noeud in distances}
+
+    # Liste pour simuler la file de priorité
+    noeuds_a_visiter = [(0, depart)]  # (estimation coût, noeud)
+
+    while noeuds_a_visiter:
+        # Sélection du noeud avec le coût estimé le plus bas sans utiliser heapq
+        noeuds_a_visiter.sort(key=lambda x: x[0])  # Trier la liste à chaque itération pour obtenir le minimum
+        current_distance, noeud_courant = noeuds_a_visiter.pop(0)  # Retirer l'élément avec le plus petit coût
+
+        # Arrêt si le noeud courant est l'arrivée
+        if noeud_courant == arrivee:
+            break
+
+        # Exploration des voisins
+        for voisin, distance in dicsuccdistInt.get(noeud_courant, {}).items():
+            nouvelle_distance = distances[noeud_courant] + distance
+            if nouvelle_distance < distances[voisin]:
+                distances[voisin] = nouvelle_distance
+                noeuds_precedents[voisin] = noeud_courant
+                estimation_cout = nouvelle_distance + heuristique(voisin, arrivee)
+                # Ajouter ou mettre à jour le voisin dans la liste
+                for idx, (cost, node) in enumerate(noeuds_a_visiter):
+                    if node == voisin:
+                        if cost > estimation_cout:
+                            noeuds_a_visiter.pop(idx)
+                            noeuds_a_visiter.append((estimation_cout, voisin))
+                        break
+                else:
+                    noeuds_a_visiter.append((estimation_cout, voisin))
+
+    # Reconstruction du chemin le plus court
+    chemin, noeud_courant = [], arrivee
+    while noeud_courant is not None:
+        chemin.insert(0, noeud_courant)
+        noeud_courant = noeuds_precedents[noeud_courant]
+
+    # Obtention de la distance minimale
+    distance_minimale = distances[arrivee]
+    return chemin, distance_minimale
+
+# Exemple d'utilisation
+chemin, distance = a_star(8947020815, 1804838595)
+print("Chemin le plus court :", chemin)
 print("Distance minimale :", distance)
