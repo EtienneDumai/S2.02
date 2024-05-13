@@ -125,7 +125,7 @@ def bellman_ford(depart, arrivee):
 
     # Initialisation du dictionnaire pour suivre les noeuds précédents dans le chemin optimal
     noeuds_precedents = {noeud: None for noeud in distances}
-
+    print(distances)
     # Relaxation des arêtes |V|-1 fois (V étant le nombre de nœuds dans le graphe)
     for _ in range(len(distances) - 1):
         for noeud in dicsuccdistInt:
@@ -150,6 +150,7 @@ def bellman_ford(depart, arrivee):
     distance_minimale = distances[arrivee]
     return chemin, distance_minimale
 
+
 keys = list(dicsuccdistInt.keys())
 for i in keys:
     print(i)
@@ -159,7 +160,7 @@ for i in keys:
         
         
 # Exemple d'utilisation
-point1Bell, point2Bell = point_alea()
+point1Bell, point2Bell = point_alea(dicsuccdistInt)
 print(f"Point 1 : ", point1Bell)
 print(f"Point 2 : ", point2Bell)
 chemin, distance = bellman_ford(point1Bell, point2Bell)
@@ -234,7 +235,7 @@ def heuristique(no, arrivee):
     # Exemple trivial qui retourne toujours 0.
     return 0
 
-def a_star(depart, arrivee):
+def a_etoile(depart, arrivee):
     depart = int(depart)
     arrivee = int(arrivee)
 
@@ -285,6 +286,6 @@ def a_star(depart, arrivee):
     return chemin, distance_minimale
 
 # Exemple d'utilisation
-chemin, distance = a_star(8947020815, 1804838595)
+chemin, distance = a_etoile(8947020815, 1804838595)
 print("Chemin le plus court :", chemin)
 print("Distance minimale :", distance)
