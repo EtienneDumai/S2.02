@@ -4,6 +4,9 @@ import numpy as np
 import os
 import sys
 import random as r
+import sys
+sys.path.append('C:\\Cours\\1EreAnnee\\2EmeSemestre\\S2.02\\part2RechercheDeplusCourtChemin\\python')
+from graphics import *
 
 os.chdir('C:\\Cours\\1EreAnnee\\2EmeSemestre\\S2.02\\part2RechercheDeplusCourtChemin\\donnees')
 
@@ -108,10 +111,10 @@ def dijkstra(depart, arrivee):
     return chemin, distance_minimale
 
 # Exemple d'utilisation
-point1Dij, point2Dij = point_alea()
+point1Dij, point2Dij = point_alea(dicsuccdistInt)
 print(f"Point 1 : ", point1Dij)
 print(f"Point 2 : ", point2Dij)
-chemin, distance = dijkstra(8947020815, 1804838595)
+chemin, distance = dijkstra(point1Dij, point2Dij)
 print("Chemin le plus court :", chemin)
 print("Distance minimale :", distance)
 
@@ -289,3 +292,7 @@ def a_etoile(depart, arrivee):
 chemin, distance = a_etoile(8947020815, 1804838595)
 print("Chemin le plus court :", chemin)
 print("Distance minimale :", distance)
+
+
+
+
