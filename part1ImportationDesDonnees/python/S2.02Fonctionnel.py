@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import math 
 """ Importation des fichiers"""
-os.chdir('C:\\Cours\\1EreAnnee\\2EmeSemestre\\S2.02\\donnees')
+os.chdir('C:\\Cours\\1EreAnnee\\2EmeSemestre\\S2.02\\part1ImportationDesDonnees\\donnees')
 arcs=pd.read_table('arcs.csv', sep=';', encoding="ANSI")
 points = pd.read_table('points.csv', sep=';',  encoding="ANSI")
 """
