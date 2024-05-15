@@ -5,7 +5,7 @@ import os
 import sys
 import random as r
 import sys
-sys.path.append('C:\\Cours\\1EreAnnee\\2EmeSemestre\\S2.02\\part2RechercheDeplusCourtChemin\\python')
+sys.path.append('C:\\Cours\\1EreAnnee\\2EmeSemestre\\S2.02\\part3Visualisation\\python')
 from graphics import *
 
 os.chdir('C:\\Cours\\1EreAnnee\\2EmeSemestre\\S2.02\\part2RechercheDeplusCourtChemin\\donnees')
@@ -67,56 +67,56 @@ def point_alea(graphe):
             break
     return cle_alea1, cle_alea2
 
-def dijkstra(depart, arrivee):
-    depart = int(depart)
-    arrivee = int(arrivee)
+def reconstruire_chemin(sommet_depart, sommet_arrivee, pred):
+    chemin = []
+    sommet = sommet_arrivee
+    while sommet != sommet_depart:
+        chemin.insert(0, sommet)
+        sommet = pred[sommet]
+    chemin.insert(0, sommet_depart)
+    return chemin
 
-    # Initialisation des distances pour tous les nœuds mentionnés dans dicsucc et dicsuccdistInt
-    distances = {noeud: float('inf') for noeud in set(dicsucc) | {voisin for values in dicsuccdistInt.values() for voisin in values}}
-    distances[depart] = 0
 
-    # Dictionnaire pour suivre le noeud précédent
-    noeuds_precedents = {noeud: None for noeud in distances}
+def extraire_min(distances, a_traiter):
+    sommet_min = a_traiter[0]
+    for sommet in a_traiter:
+        if distances[sommet] < distances[sommet_min]:
+            sommet_min = sommet
+    return sommet_min
 
-    # Liste des noeuds à visiter
-    noeuds_a_visiter = [depart]
 
-    while noeuds_a_visiter:
-        # Sélection du noeud avec la distance minimale
-        noeud_courant = min(noeuds_a_visiter, key=lambda noeud: distances[noeud])
-        noeuds_a_visiter.remove(noeud_courant)
+def dijkstra(graphe, sommet_depart, sommet_arrivee):
+    # Initialisation
+    distances = {sommet: float('inf') for sommet in graphe}
+    distances[sommet_depart] = 0
+    pred = {}
+    sommet_non_traites = set(graphe.keys())
 
-        # Arrêt si le noeud courant est l'arrivée
-        if noeud_courant == arrivee:
-            break
+    while sommet_non_traites:
+        # Sélectionner le sommet non traité avec la plus petite distance
+        sommet_courant = min(sommet_non_traites, key=lambda sommet: distances[sommet])
+        sommet_non_traites.remove(sommet_courant)
 
-        # Exploration des voisins
-        for voisin, distance in dicsuccdistInt.get(noeud_courant, {}).items():
-            if voisin in distances:
-                nouvelle_distance = distances[noeud_courant] + distance
-                if nouvelle_distance < distances[voisin]:
-                    distances[voisin] = nouvelle_distance
-                    noeuds_precedents[voisin] = noeud_courant
-                    if voisin not in noeuds_a_visiter:
-                        noeuds_a_visiter.append(voisin)
+        if sommet_courant == sommet_arrivee:
+            break  # On a trouvé le chemin le plus court
 
-    # Reconstruction du chemin le plus court
-    chemin, noeud_courant = [], arrivee
-    while noeud_courant is not None:
-        chemin.insert(0, noeud_courant)
-        noeud_courant = noeuds_precedents[noeud_courant]
+        for voisin, poids in graphe[sommet_courant].items():  # Utiliser .items() pour itérer sur les voisins
+            # Calculer la nouvelle distance
+            nouvelle_distance = distances[sommet_courant] + poids
 
-    # Obtention de la distance minimale
-    distance_minimale = distances[arrivee]
-    return chemin, distance_minimale
+            if nouvelle_distance < distances[voisin]:
+                distances[voisin] = nouvelle_distance
+                pred[voisin] = sommet_courant
+            
+    return reconstruire_chemin(sommet_depart, sommet_arrivee, pred)
+
 
 # Exemple d'utilisation
 point1Dij, point2Dij = point_alea(dicsuccdistInt)
 print(f"Point 1 : ", point1Dij)
 print(f"Point 2 : ", point2Dij)
-chemin, distance = dijkstra(point1Dij, point2Dij)
-print("Chemin le plus court :", chemin)
-print("Distance minimale :", distance)
+chemin = dijkstra(dicsuccdistInt, point1Dij, point2Dij)
+print("Chemin : ", chemin)
 
 def bellman_ford(depart, arrivee):
     depart = int(depart)
