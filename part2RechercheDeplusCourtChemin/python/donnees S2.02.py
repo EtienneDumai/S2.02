@@ -1,12 +1,10 @@
+#Initialisation des variables et des fonctions nécessaires au bon fonctionnement des algos
 import json
 import pandas as pd
 import numpy as np
 import os
 import sys
 import random as r
-import sys
-sys.path.append('C:\\Cours\\1EreAnnee\\2EmeSemestre\\S2.02\\part3Visualisation\\python')
-from graphics import *
 
 os.chdir('C:\\Cours\\1EreAnnee\\2EmeSemestre\\S2.02\\part2RechercheDeplusCourtChemin\\donnees')
 
@@ -67,6 +65,12 @@ def point_alea(graphe):
             break
     return cle_alea1, cle_alea2
 
+def indice(nom_sommet):
+    return ord(nom_sommet) - ord('A')
+
+def nom_sommet(indice_sommet):
+    return chr(ord('A') + indice_sommet)
+
 def reconstruire_chemin(sommet_depart, sommet_arrivee, pred):
     chemin = []
     sommet = sommet_arrivee
@@ -90,20 +94,9 @@ def relacher(pnt1, pnt2, distances, predecesseurs, poids):
         predecesseurs[pnt1] = pnt2
 
 
-def indice(nom_sommet):
-    return ord(nom_sommet) - ord('A')
+#Debut des algos
 
-def nom_sommet(indice_sommet):
-    return chr(ord('A') + indice_sommet)
 
-def reconstituer(chemin_pred, depart, arrivee):
-    chemin = []
-    actuel = indice(arrivee)
-    while actuel != indice(depart):
-        chemin.append(nom_sommet(actuel))
-        actuel = chemin_pred[actuel]
-    chemin.append(nom_sommet(indice(depart)))
-    return chemin[::-1]
 
 def dijkstra(graphe, sommet_depart, sommet_arrivee):
     # Initialisation des variables nécessaires à l'exécution du programme
@@ -127,31 +120,42 @@ def dijkstra(graphe, sommet_depart, sommet_arrivee):
             if nouvelle_distance < distances[voisin]:
                 distances[voisin] = nouvelle_distance
                 pred[voisin] = sommet_courant
-            
-    return reconstruire_chemin(sommet_depart, sommet_arrivee, pred)
+    chemin = reconstruire_chemin(sommet_depart, sommet_arrivee, pred)
+    distance_totale = distances[sommet_arrivee]
+    return chemin, round(distance_totale)
 
 
 # Exemple d'utilisation
 point1Dij, point2Dij = point_alea(dicsuccdistInt)
 print(f"Point 1 : ", point1Dij)
 print(f"Point 2 : ", point2Dij)
-chemin = dijkstra(dicsuccdistInt, point1Dij, point2Dij)
+chemin, distance = dijkstra(dicsuccdistInt, point1Dij, point2Dij)
 print("Chemin : ", chemin)
-del point1Dij, point2Dij, chemin
+print("Distance : ", distance)
+del point1Dij, point2Dij, chemin, distance
 
-def bellman(graphe, sommet_depart, sommet_arrivee):
-    #initialisation des variables pour l'exécution de l'algorithme
-    depart = int(sommet_depart)
-    arrivee = int(sommet_arrivee)
-    distances = {sommet: float('inf') for sommet in graphe}
-    distances[sommet_depart] = 0
-    pred = {}
-    n=len(graphe)
-    #Debut de l'algorithme
-    for sommetCle in graphe.keys():
-        for voisin in graphe[sommetCle]:
-            relacher(sommetCle, voisin, distances, pred, poids)
-    return 0
+
+def bellman_ford(graphe, sommet_depart):
+ # Initialisation
+ distances = {sommet: float('inf') for sommet in graphe}
+ distances[sommet_depart] = 0
+ pred = {sommet: None for sommet in graphe}
+
+ # Relâcher chaque arête (V-1) fois
+ for _ in range(len(graphe) - 1):
+     for sommet in graphe:
+         for voisin, poids in graphe[sommet].items():
+             if distances[sommet] + poids < distances[voisin]:
+                 distances[voisin] = distances[sommet] + poids
+                 pred[voisin] = sommet
+
+ # Vérification de cycles de poids négatif
+ for sommet in graphe:
+     for voisin, poids in graphe[sommet].items():
+         if distances[sommet] + poids < distances[voisin]:
+             raise ValueError("Le graphe contient un cycle de poids négatif")
+
+ return distances, pred
 
 
 
@@ -162,55 +166,14 @@ def bellman(graphe, sommet_depart, sommet_arrivee):
 point1Bell, point2Bell = point_alea(dicsuccdistInt)
 print(f"Point 1 : ", point1Bell)
 print(f"Point 2 : ", point2Bell)
-chemin, distance = bellman_ford(point1Bell, point2Bell)
-print("Chemin le plus court :", chemin)
-print("Distance minimale :", distance)
+distances, pred = bellman_ford(dicsuccdistInt, point1Bell)
+chemin = reconstruire_chemin( point1Bell, point2Bell, pred)
+print("Distances:", distances)
+print("Chemin du point 1 au point 2 :", chemin)
+del point1Bell, point2Bell, distances, chemin
 
 
-def floyd_warshall(depart, arrivee):
-
-# Exemple d'utilisation
-distance = floyd_warshall(8947020815, 1804838595)
-print("Distance minimale de 8947020815 à 1804838595 :", distance)
-
-# Exemple d'utilisation
-
-
-depart, arrivee = point_alea()  # Suppose que point_alea retourne deux entiers valides
-print("Départ:", depart, "Arrivée:", arrivee)
-
-distance = floyd_warshall(depart, arrivee)
-print("Distance minimale de", depart, "à", arrivee, ":", distance)
-
-def creer_sous_graphe_critere(dicsuccdistInt, critere):
-    # Filtrer les clés selon un critère
-    keys_selected = [key for key, neighbors in dicsuccdistInt.items() if critere(neighbors)]
-    
-    # Construire le sous-graphe
-    sous_graphe = {key: dicsuccdistInt[key] for key in keys_selected}
-    return sous_graphe
-
-# Exemple d'utilisation avec un critère spécifique
-# Supposons que le critère soit d'avoir plus de 5 voisins
-sous_graphe = creer_sous_graphe_critere(dicsuccdistInt, lambda neighbors: len(neighbors) > 3)
-print(sous_graphe)
-point1Floyd, point2Floyd = point_alea(sous_graphe)
-print(f"Point 1 : ", point1Floyd)
-print(f"Point 2 : ", point2Floyd)
-distance = floyd_warshall(point1Floyd, point2Floyd)
-print("Distance minimale :", distance)
-
-
-
-
-
-def a_etoile(depart, arrivee):
-    
-
-# Exemple d'utilisation
-chemin, distance = a_etoile(8947020815, 1804838595)
-print("Chemin le plus court :", chemin)
-print("Distance minimale :", distance)
+#Floyd Warshall a faire 
 
 
 
