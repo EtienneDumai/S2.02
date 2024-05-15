@@ -84,9 +84,29 @@ def extraire_min(distances, a_traiter):
             sommet_min = sommet
     return sommet_min
 
+def relacher(pnt1, pnt2, distances, predecesseurs, poids):
+    if distances[pnt1] > distances[pnt2] + poids[(pnt2, pnt1)]:
+        distances[pnt1] = distances[pnt2] + poids[(pnt2, pnt1)]
+        predecesseurs[pnt1] = pnt2
+
+
+def indice(nom_sommet):
+    return ord(nom_sommet) - ord('A')
+
+def nom_sommet(indice_sommet):
+    return chr(ord('A') + indice_sommet)
+
+def reconstituer(chemin_pred, depart, arrivee):
+    chemin = []
+    actuel = indice(arrivee)
+    while actuel != indice(depart):
+        chemin.append(nom_sommet(actuel))
+        actuel = chemin_pred[actuel]
+    chemin.append(nom_sommet(indice(depart)))
+    return chemin[::-1]
 
 def dijkstra(graphe, sommet_depart, sommet_arrivee):
-    # Initialisation
+    # Initialisation des variables nécessaires à l'exécution du programme
     distances = {sommet: float('inf') for sommet in graphe}
     distances[sommet_depart] = 0
     pred = {}
@@ -117,50 +137,26 @@ print(f"Point 1 : ", point1Dij)
 print(f"Point 2 : ", point2Dij)
 chemin = dijkstra(dicsuccdistInt, point1Dij, point2Dij)
 print("Chemin : ", chemin)
+del point1Dij, point2Dij, chemin
 
-def bellman_ford(depart, arrivee):
-    depart = int(depart)
-    arrivee = int(arrivee)
+def bellman(graphe, sommet_depart, sommet_arrivee):
+    #initialisation des variables pour l'exécution de l'algorithme
+    depart = int(sommet_depart)
+    arrivee = int(sommet_arrivee)
+    distances = {sommet: float('inf') for sommet in graphe}
+    distances[sommet_depart] = 0
+    pred = {}
+    n=len(graphe)
+    #Debut de l'algorithme
+    for sommetCle in graphe.keys():
+        for voisin in graphe[sommetCle]:
+            relacher(sommetCle, voisin, distances, pred, poids)
+    return 0
 
-    # Initialisation des distances pour tous les nœuds mentionnés dans dicsuccdistInt
-    distances = {noeud: float('inf') for noeud in set(dicsucc) | {voisin for values in dicsuccdistInt.values() for voisin in values}}
-    distances[depart] = 0
-
-    # Initialisation du dictionnaire pour suivre les noeuds précédents dans le chemin optimal
-    noeuds_precedents = {noeud: None for noeud in distances}
-    print(distances)
-    # Relaxation des arêtes |V|-1 fois (V étant le nombre de nœuds dans le graphe)
-    for _ in range(len(distances) - 1):
-        for noeud in dicsuccdistInt:
-            for voisin, poids in dicsuccdistInt[noeud].items():
-                if distances[noeud] + poids < distances[voisin]:
-                    distances[voisin] = distances[noeud] + poids
-                    noeuds_precedents[voisin] = noeud
-
-    # Vérification de l'existence de cycles de poids négatif
-    for noeud in dicsuccdistInt:
-        for voisin, poids in dicsuccdistInt[noeud].items():
-            if distances[noeud] + poids < distances[voisin]:
-                raise ValueError("Le graphe contient un cycle de poids négatif")
-
-    # Reconstruction du chemin le plus court
-    chemin, noeud_courant = [], arrivee
-    while noeud_courant is not None:
-        chemin.insert(0, noeud_courant)
-        noeud_courant = noeuds_precedents[noeud_courant]
-
-    # Obtention de la distance minimale pour atteindre 'arrivee'
-    distance_minimale = distances[arrivee]
-    return chemin, distance_minimale
-
-
-keys = list(dicsuccdistInt.keys())
-for i in keys:
-    print(i)
 
 
         
-        
+
         
 # Exemple d'utilisation
 point1Bell, point2Bell = point_alea(dicsuccdistInt)
@@ -172,33 +168,6 @@ print("Distance minimale :", distance)
 
 
 def floyd_warshall(depart, arrivee):
-    depart = int(depart)
-    arrivee = int(arrivee)
-
-    noeuds = set(dicsuccdistInt.keys()) | {voisin for subdict in dicsuccdistInt.values() for voisin in subdict}
-    noeuds = list(noeuds)
-    index_noeuds = {noeuds: idx for idx, noeuds in enumerate(noeuds)}
-
-    n = len(noeuds)
-    inf = float('inf')
-    dist = [[inf] * n for _ in range(n)]
-    
-    for i in range(n):
-        dist[i][i] = 0
-
-    for u in dicsuccdistInt:
-        for v, poids in dicsuccdistInt[u].items():
-            i, j = index_noeuds[u], index_noeuds[v]
-            dist[i][j] = poids
-
-    for k in range(n):
-        for i in range(n):
-            for j in range(n):
-                if dist[i][j] > dist[i][k] + dist[k][j]:
-                    dist[i][j] = dist[i][k] + dist[k][j]
-
-    distance_minimale = dist[index_noeuds[depart]][index_noeuds[arrivee]]
-    return distance_minimale if distance_minimale != inf else None
 
 # Exemple d'utilisation
 distance = floyd_warshall(8947020815, 1804838595)
@@ -233,60 +202,10 @@ print("Distance minimale :", distance)
 
 
 
-def heuristique(no, arrivee):
-    # Fonction heuristique, à adapter selon le contexte de votre application.
-    # Exemple trivial qui retourne toujours 0.
-    return 0
+
 
 def a_etoile(depart, arrivee):
-    depart = int(depart)
-    arrivee = int(arrivee)
-
-    # Initialisation des distances
-    distances = {noeud: float('inf') for noeud in set(dicsuccdistInt.keys()) | {voisin for values in dicsuccdistInt.values() for voisin in values}}
-    distances[depart] = 0
-
-    # Dictionnaire pour suivre le noeud précédent
-    noeuds_precedents = {noeud: None for noeud in distances}
-
-    # Liste pour simuler la file de priorité
-    noeuds_a_visiter = [(0, depart)]  # (estimation coût, noeud)
-
-    while noeuds_a_visiter:
-        # Sélection du noeud avec le coût estimé le plus bas sans utiliser heapq
-        noeuds_a_visiter.sort(key=lambda x: x[0])  # Trier la liste à chaque itération pour obtenir le minimum
-        current_distance, noeud_courant = noeuds_a_visiter.pop(0)  # Retirer l'élément avec le plus petit coût
-
-        # Arrêt si le noeud courant est l'arrivée
-        if noeud_courant == arrivee:
-            break
-
-        # Exploration des voisins
-        for voisin, distance in dicsuccdistInt.get(noeud_courant, {}).items():
-            nouvelle_distance = distances[noeud_courant] + distance
-            if nouvelle_distance < distances[voisin]:
-                distances[voisin] = nouvelle_distance
-                noeuds_precedents[voisin] = noeud_courant
-                estimation_cout = nouvelle_distance + heuristique(voisin, arrivee)
-                # Ajouter ou mettre à jour le voisin dans la liste
-                for idx, (cost, node) in enumerate(noeuds_a_visiter):
-                    if node == voisin:
-                        if cost > estimation_cout:
-                            noeuds_a_visiter.pop(idx)
-                            noeuds_a_visiter.append((estimation_cout, voisin))
-                        break
-                else:
-                    noeuds_a_visiter.append((estimation_cout, voisin))
-
-    # Reconstruction du chemin le plus court
-    chemin, noeud_courant = [], arrivee
-    while noeud_courant is not None:
-        chemin.insert(0, noeud_courant)
-        noeud_courant = noeuds_precedents[noeud_courant]
-
-    # Obtention de la distance minimale
-    distance_minimale = distances[arrivee]
-    return chemin, distance_minimale
+    
 
 # Exemple d'utilisation
 chemin, distance = a_etoile(8947020815, 1804838595)
