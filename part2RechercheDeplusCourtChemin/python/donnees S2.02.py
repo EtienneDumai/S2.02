@@ -41,6 +41,7 @@ for i in range(len(tableau_poids)):
 
 del fichier, i, j, val, ls, lst, ind 
 
+#Definition des focntions utiles aux algorithmes
 def transformer_graphe_en_dictionnaire(graphe):
     nouveau_graphe = {}
     for sommet_str, voisins in graphe.items():
@@ -99,21 +100,21 @@ def relacher(pnt1, pnt2, distances, predecesseurs, poids):
 
 
 def dijkstra(graphe, sommet_depart, sommet_arrivee):
-    # Initialisation des variables nécessaires à l'exécution du programme
+    # Initialisation des variables ecessaire au programme
     distances = {sommet: float('inf') for sommet in graphe}
     distances[sommet_depart] = 0
     pred = {}
     sommet_non_traites = set(graphe.keys())
 
     while sommet_non_traites:
-        # Sélectionner le sommet non traité avec la plus petite distance
+        # Selectionner le sommet non traite avec la plus petite distance
         sommet_courant = min(sommet_non_traites, key=lambda sommet: distances[sommet])
         sommet_non_traites.remove(sommet_courant)
 
         if sommet_courant == sommet_arrivee:
             break  # On a trouvé le chemin le plus court
 
-        for voisin, poids in graphe[sommet_courant].items():  # Utiliser .items() pour itérer sur les voisins
+        for voisin, poids in graphe[sommet_courant].items():  # Utiliser .items() pour iterer sur les voisins
             # Calculer la nouvelle distance
             nouvelle_distance = distances[sommet_courant] + poids
 
@@ -141,7 +142,7 @@ def bellman_ford(graphe, sommet_depart):
  distances[sommet_depart] = 0
  pred = {sommet: None for sommet in graphe}
 
- # Relâcher chaque arête (V-1) fois
+ # Relâcher chaque arete (V-1) fois
  for _ in range(len(graphe) - 1):
      for sommet in graphe:
          for voisin, poids in graphe[sommet].items():
@@ -149,7 +150,7 @@ def bellman_ford(graphe, sommet_depart):
                  distances[voisin] = distances[sommet] + poids
                  pred[voisin] = sommet
 
- # Vérification de cycles de poids négatif
+ # Vérification de cycles de poids negatif
  for sommet in graphe:
      for voisin, poids in graphe[sommet].items():
          if distances[sommet] + poids < distances[voisin]:
@@ -176,5 +177,37 @@ del point1Bell, point2Bell, distances, chemin
 #Floyd Warshall a faire 
 
 
+import time
 
 
+def floyd_warshall(matricePonderee):
+    taille = len(matricePonderee)
+    
+    # Remplissage de M0 et P0
+    M = np.array(matricePonderee)
+    P = np.full((taille, taille), -1, dtype=int)
+    
+    for i in range(taille):
+        for j in range(taille):
+            if M[i][j] != 0 and i != j:
+                P[i][j] = i
+            else:
+                P[i][j] = -1  
+    debutTemps = time.time()
+    
+    # D�but des it�rations sur les lignes et les colonnes
+    for k in range(taille):       
+        for i in range(taille):
+            for j in range(taille):
+                
+                if M[i][k] + M[k][j] < M[i][j]:
+                    M[i][j] = M[i][k] + M[k][j]
+                    P[i][j] = P[k][j]
+        temps = time.time()
+        
+        print ("�tape num�ro : ", k, " termin�e en : ", round(temps) - round(debutTemps), "secondes")
+    
+    return M, P
+matrice, poids = floyd_warshall(matrice_poids)
+print(matrice)
+print(poids)
