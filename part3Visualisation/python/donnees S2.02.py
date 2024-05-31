@@ -265,19 +265,14 @@ longitudeGauche = -1.48768
 echelle_longitude = 1411 / 0.0303
 echelle_latitude = 912 / 0.01422
 latHauteur = 43.4990
-
+point1 = 0
+point2 = 0 
 # Create window and image
 win = g.GraphWin("Carte de Bayonne", 1412, 912)
 image = g.Image(g.Point(705, 456), chemin_image)
 image.draw(win)
 
-def lat_lon_to_screen(lat, lon):
-    x = (lon - longitudeGauche) * echelle_longitude
-    y = (latHauteur - lat) * echelle_latitude
-    return x, y
-
 # Create a mapping from point id to screen coordinates
-
 for i in range(1884):
     lat = sommets.iloc[i,0]
     lon = sommets.iloc[i,1]
@@ -287,22 +282,46 @@ for i in range(1884):
     cercle.setFill("red")
     cercle.draw(win)
 # Dessiner les lignes entre les points du graphe
-for index, row in aretes.iterrows():
-    points = row['lstpoints']  #utiliser une liste d'int'
-    for j in range(len(points) - 1):
-        start_id = points[j]
-        end_id = points[j + 1]
-        
-        start_point = sommets[sommets.index == start_id]
-        end_point = sommets[sommets.index == end_id]
-        
-        if not start_point.empty and not end_point.empty:
-            x1, y1 = lat_lon_to_screen(start_point.iloc[0]['lat'], start_point.iloc[0]['lon'])
-            x2, y2 = lat_lon_to_screen(end_point.iloc[0]['lat'], end_point.iloc[0]['lon'])
-            
-            line = g.Line(g.Point(x1, y1), g.Point(x2, y2))
-            line.setFill("blue")
-            line.draw(win)
 
+   # Close window when done
+
+def traceArc(point1, point2, color = "black", width = 1):
+    lat1 = sommets.loc[point1, 'y']
+    lon1 = sommets.loc[point1, 'x']
+    lat2 = sommets.loc[point2, 'y']
+    lon2 = sommets.loc[point2,'x']
+    
+    pt1 = g.Point(lon1, lat1)
+    pt2 = g.Point(lon2, lat2)
+    
+    arc = g.Line(pt1, pt2)
+    arc.setFill(color)
+    arc.setWidth(width)
+    arc.draw(win)
+for arc in aretes.index:
+    
+    listePoints = aretes.loc[arc, 'lstpoints']
+    point1 = listePoints[0]
+    point2 = listePoints[-1]
+    traceArc(point1, point2)
 win.getMouse()  # Pause to view result
-win.close()    # Close window when done
+win.close() 
+
+
+
+
+
+
+    
+
+
+
+
+
+
+
+        
+
+
+
+
