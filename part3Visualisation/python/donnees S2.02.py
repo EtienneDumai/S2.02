@@ -114,15 +114,18 @@ def dijkstra(graphe, sommet_depart, sommet_arrivee):
 
         if sommet_courant == sommet_arrivee:
             break  # On a trouv√© le chemin le plus court
-
+        
         for voisin, poids in graphe[sommet_courant].items():  # Utiliser .items() pour iterer sur les voisins
             # Calculer la nouvelle distance
             nouvelle_distance = distances[sommet_courant] + poids
-
             if nouvelle_distance < distances[voisin]:
                 distances[voisin] = nouvelle_distance
+                
                 pred[voisin] = sommet_courant
+                traceChemin(sommet_courant, voisin, color="orange", width=2)
     chemin = reconstruire_chemin(sommet_depart, sommet_arrivee, pred)
+    for i in range(len(chemin) - 1):
+        traceChemin(chemin[i], chemin[i + 1], color="purple", width=4)
     distance_totale = distances[sommet_arrivee]
     return chemin, round(distance_totale)
 
@@ -214,108 +217,61 @@ print(matrice)
 print(poids)
 
 
-
-# Wait for a mouse click to close the window
-longitudeGauche = -1.48768
-echelle_longitude = 1411 / 0.0303
-echelle_latitude = 912/0.01422
-latHauteur = 43.4990
-
-win = g.GraphWin("Carte de Bayonne", 1412, 912)
-image = g.Image(g.Point(705,456), chemin_image)
-image.draw(win)
-for i in range(1884):
-    lat = sommets.iloc[i,0]
-    lon = sommets.iloc[i,1]
-    x = (lon-longitudeGauche)*echelle_longitude
-    y = (latHauteur - lat)*echelle_latitude
-    cercle = g.Circle(g.Point(x,y), 2)
-    cercle.setFill("red")
-    cercle.draw(win)
-for i in range(len(aretes)):
-    points_list = aretes.iloc[i, 1]
-    if isinstance(points_list, str):  # Vérifier si les points sont sous forme de chaîne
-        points_list = points_list.strip('[]').split(', ')
-        points_list = list(map(int, points_list))
-    
-    for j in range(len(points_list) - 1):
-        sommet1 = points_list[j]
-        sommet2 = points_list[j + 1]
-
-        lat1 = sommets[sommets['id'] == sommet1]['lat'].values[0]
-        lon1 = sommets[sommets['id'] == sommet1]['lon'].values[0]
-        lat2 = sommets[sommets['id'] == sommet2]['lat'].values[0]
-        lon2 = sommets[sommets['id'] == sommet2]['lon'].values[0]
-
-        x1 = (lon1 - longitudeGauche) * echelle_longitude
-        y1 = (latHauteur - lat1) * echelle_latitude
-        x2 = (lon2 - longitudeGauche) * echelle_longitude
-        y2 = (latHauteur - lat2) * echelle_latitude
-
-        ligne = g.Line(g.Point(x1, y1), g.Point(x2, y2))
-        ligne.setFill("blue")
-        ligne.draw(win)
-
-
-win.getMouse()
-win.close()
-
-# Constants for coordinate transformations
+# Variables pour la transformation des coordonnées
 longitudeGauche = -1.48768
 echelle_longitude = 1411 / 0.0303
 echelle_latitude = 912 / 0.01422
 latHauteur = 43.4990
-point1 = 0
-point2 = 0 
-# Create window and image
+ 
+# Créer la fenetre et l'image
 win = g.GraphWin("Carte de Bayonne", 1412, 912)
 image = g.Image(g.Point(705, 456), chemin_image)
 image.draw(win)
 
-# Create a mapping from point id to screen coordinates
+# représenter les coordonnées du fichier à celle de la fenetre
 for i in range(1884):
-    lat = sommets.iloc[i,0]
-    lon = sommets.iloc[i,1]
-    x = (lon-longitudeGauche)*echelle_longitude
-    y = (latHauteur - lat)*echelle_latitude
-    cercle = g.Circle(g.Point(x,y), 2)
+    lat = sommets.iloc[i, 0]
+    lon = sommets.iloc[i, 1]
+    x = (lon - longitudeGauche) * echelle_longitude
+    y = (latHauteur - lat) * echelle_latitude
+    cercle = g.Circle(g.Point(x, y), 2)
     cercle.setFill("red")
     cercle.draw(win)
-# Dessiner les lignes entre les points du graphe
 
-   # Close window when done
-
-def traceArc(point1, point2, color = "black", width = 1):
-    lat1 = sommets.loc[point1, 'y']
-    lon1 = sommets.loc[point1, 'x']
-    lat2 = sommets.loc[point2, 'y']
-    lon2 = sommets.loc[point2,'x']
+# Function to draw arcs between points
+def traceChemin(point1, point2, color="black", width=1):
+    lat1 = sommets.loc[point1, 'lat']
+    lon1 = sommets.loc[point1, 'lon']
+    lat2 = sommets.loc[point2, 'lat']
+    lon2 = sommets.loc[point2, 'lon']
     
-    pt1 = g.Point(lon1, lat1)
-    pt2 = g.Point(lon2, lat2)
+    pt1 = g.Point((lon1 - longitudeGauche) * echelle_longitude, 
+                  (latHauteur - lat1) * echelle_latitude)
+    pt2 = g.Point((lon2 - longitudeGauche) * echelle_longitude, 
+                  (latHauteur - lat2) * echelle_latitude)
     
     arc = g.Line(pt1, pt2)
     arc.setFill(color)
     arc.setWidth(width)
     arc.draw(win)
+
+# Draw the arcs between the points
 for arc in aretes.index:
-    
     listePoints = aretes.loc[arc, 'lstpoints']
-    point1 = listePoints[0]
-    point2 = listePoints[-1]
-    traceArc(point1, point2)
-win.getMouse()  # Pause to view result
-win.close() 
+    depart = listePoints[0]
+    arrive = listePoints[-1]
+    traceChemin(depart, arrive)
+point1Dij, point2Dij = point_alea(dicsuccdistInt)
+print(f"Point 1 : ", point1Dij)
+print(f"Point 2 : ", point2Dij)
+chemin, distance = dijkstra(dicsuccdistInt, point1Dij, point2Dij)
+print("Chemin : ", chemin)
+print("Distance : ", distance)
+del point1Dij, point2Dij, chemin, distance
 
-
-
-
-
-
-    
-
-
-
+# Pause to view result
+win.getMouse()  
+win.close()
 
 
 
