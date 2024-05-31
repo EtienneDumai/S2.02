@@ -153,6 +153,7 @@ def bellman_ford(graphe, sommet_depart):
              if distances[sommet] + poids < distances[voisin]:
                  distances[voisin] = distances[sommet] + poids
                  pred[voisin] = sommet
+                 traceChemin(sommet, voisin, color="red", width=2)
 
  # V√©rification de cycles de poids negatif
  for sommet in graphe:
@@ -178,43 +179,62 @@ print("Chemin du point 1 au point 2 :", chemin)
 del point1Bell, point2Bell, distances, chemin
 
 
-#Floyd Warshall a faire 
 
 
-import time
 
+# Variables pour la transformation des coordonnées
+longitudeGauche = -1.48768
+echelle_longitude = 1411 / 0.0303
+echelle_latitude = 912 / 0.01422
+latHauteur = 43.4990
+ 
+# Créer la fenetre et l'image
+win = g.GraphWin("Carte de Bayonne", 1412, 912)
+image = g.Image(g.Point(705, 456), chemin_image)
+image.draw(win)
 
-def floyd_warshall(matricePonderee):
-    taille = len(matricePonderee)
+# représenter les coordonnées du fichier à celle de la fenetre
+for i in range(1884):
+    lat = sommets.iloc[i, 0]
+    lon = sommets.iloc[i, 1]
+    x = (lon - longitudeGauche) * echelle_longitude
+    y = (latHauteur - lat) * echelle_latitude
+    cercle = g.Circle(g.Point(x, y), 2)
+    cercle.setFill("red")
+    cercle.draw(win)
+
+# Function to draw arcs between points
+def traceChemin(point1, point2, color="black", width=1):
+    lat1 = sommets.loc[point1, 'lat']
+    lon1 = sommets.loc[point1, 'lon']
+    lat2 = sommets.loc[point2, 'lat']
+    lon2 = sommets.loc[point2, 'lon']
     
-    # Remplissage de M0 et P0
-    M = np.array(matricePonderee)
-    P = np.full((taille, taille), -1, dtype=int)
+    pt1 = g.Point((lon1 - longitudeGauche) * echelle_longitude, 
+                  (latHauteur - lat1) * echelle_latitude)
+    pt2 = g.Point((lon2 - longitudeGauche) * echelle_longitude, 
+                  (latHauteur - lat2) * echelle_latitude)
     
-    for i in range(taille):
-        for j in range(taille):
-            if M[i][j] != 0 and i != j:
-                P[i][j] = i
-            else:
-                P[i][j] = -1  
-    debutTemps = time.time()
+    arc = g.Line(pt1, pt2)
+    arc.setFill(color)
+    arc.setWidth(width)
+    arc.draw(win)
+
+# Draw the arcs between the points
+for arc in aretes.index:
+    listePoints = aretes.loc[arc, 'lstpoints']
+    depart = listePoints[0]
+    arrive = listePoints[-1]
+    traceChemin(depart, arrive)
     
-    # Début des itérations sur les lignes et les colonnes
-    for k in range(taille):       
-        for i in range(taille):
-            for j in range(taille):
-                
-                if M[i][k] + M[k][j] < M[i][j]:
-                    M[i][j] = M[i][k] + M[k][j]
-                    P[i][j] = P[k][j]
-        temps = time.time()
-        
-        print ("étape numéro : ", k, " terminée en : ", round(temps) - round(debutTemps), "secondes")
-    
-    return M, P
-matrice, poids = floyd_warshall(matrice_poids)
-print(matrice)
-print(poids)
+point1Bell, point2Bell = point_alea(dicsuccdistInt)
+distances, pred = bellman_ford(dicsuccdistInt, point1Bell)
+chemin = reconstruire_chemin( point1Bell, point2Bell, pred)
+for i in range(len(chemin) - 1):
+        traceChemin(chemin[i], chemin[i + 1], color="green", width=3)
+# Pause to view result
+win.getMouse()  
+win.close()
 
 
 # Variables pour la transformation des coordonnées
@@ -262,18 +282,12 @@ for arc in aretes.index:
     arrive = listePoints[-1]
     traceChemin(depart, arrive)
 point1Dij, point2Dij = point_alea(dicsuccdistInt)
-print(f"Point 1 : ", point1Dij)
-print(f"Point 2 : ", point2Dij)
 chemin, distance = dijkstra(dicsuccdistInt, point1Dij, point2Dij)
-print("Chemin : ", chemin)
-print("Distance : ", distance)
 del point1Dij, point2Dij, chemin, distance
 
 # Pause to view result
 win.getMouse()  
 win.close()
-
-
 
 
         
