@@ -232,5 +232,77 @@ for i in range(1884):
     cercle = g.Circle(g.Point(x,y), 2)
     cercle.setFill("red")
     cercle.draw(win)
+for i in range(len(aretes)):
+    points_list = aretes.iloc[i, 1]
+    if isinstance(points_list, str):  # Vérifier si les points sont sous forme de chaîne
+        points_list = points_list.strip('[]').split(', ')
+        points_list = list(map(int, points_list))
+    
+    for j in range(len(points_list) - 1):
+        sommet1 = points_list[j]
+        sommet2 = points_list[j + 1]
+
+        lat1 = sommets[sommets['id'] == sommet1]['lat'].values[0]
+        lon1 = sommets[sommets['id'] == sommet1]['lon'].values[0]
+        lat2 = sommets[sommets['id'] == sommet2]['lat'].values[0]
+        lon2 = sommets[sommets['id'] == sommet2]['lon'].values[0]
+
+        x1 = (lon1 - longitudeGauche) * echelle_longitude
+        y1 = (latHauteur - lat1) * echelle_latitude
+        x2 = (lon2 - longitudeGauche) * echelle_longitude
+        y2 = (latHauteur - lat2) * echelle_latitude
+
+        ligne = g.Line(g.Point(x1, y1), g.Point(x2, y2))
+        ligne.setFill("blue")
+        ligne.draw(win)
+
+
 win.getMouse()
 win.close()
+
+# Constants for coordinate transformations
+longitudeGauche = -1.48768
+echelle_longitude = 1411 / 0.0303
+echelle_latitude = 912 / 0.01422
+latHauteur = 43.4990
+
+# Create window and image
+win = g.GraphWin("Carte de Bayonne", 1412, 912)
+image = g.Image(g.Point(705, 456), chemin_image)
+image.draw(win)
+
+def lat_lon_to_screen(lat, lon):
+    x = (lon - longitudeGauche) * echelle_longitude
+    y = (latHauteur - lat) * echelle_latitude
+    return x, y
+
+# Create a mapping from point id to screen coordinates
+
+for i in range(1884):
+    lat = sommets.iloc[i,0]
+    lon = sommets.iloc[i,1]
+    x = (lon-longitudeGauche)*echelle_longitude
+    y = (latHauteur - lat)*echelle_latitude
+    cercle = g.Circle(g.Point(x,y), 2)
+    cercle.setFill("red")
+    cercle.draw(win)
+# Dessiner les lignes entre les points du graphe
+for index, row in aretes.iterrows():
+    points = row['lstpoints']  #utiliser une liste d'int'
+    for j in range(len(points) - 1):
+        start_id = points[j]
+        end_id = points[j + 1]
+        
+        start_point = sommets[sommets.index == start_id]
+        end_point = sommets[sommets.index == end_id]
+        
+        if not start_point.empty and not end_point.empty:
+            x1, y1 = lat_lon_to_screen(start_point.iloc[0]['lat'], start_point.iloc[0]['lon'])
+            x2, y2 = lat_lon_to_screen(end_point.iloc[0]['lat'], end_point.iloc[0]['lon'])
+            
+            line = g.Line(g.Point(x1, y1), g.Point(x2, y2))
+            line.setFill("blue")
+            line.draw(win)
+
+win.getMouse()  # Pause to view result
+win.close()    # Close window when done
