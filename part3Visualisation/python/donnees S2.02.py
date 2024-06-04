@@ -1,3 +1,6 @@
+        ###########################################################################
+        ##  Initialisation des variables et fonction nécessaire aux algorithmes  ##
+        ###########################################################################
 #Initialisation des variables et des fonctions n√©cessaires au bon fonctionnement des algos
 import json
 import pandas as pd
@@ -52,7 +55,7 @@ def transformer_graphe_en_dictionnaire(graphe):
             nouveau_graphe[sommet_int][voisin] = poids  
     return nouveau_graphe
 dicsuccdistInt = transformer_graphe_en_dictionnaire(dicsuccdist)
-
+#Fonction pour avoir 2 points aléatoire du graphe
 def point_alea(graphe):
     keys = list(graphe.keys())
     nombre_alea = 0
@@ -96,10 +99,20 @@ def relacher(pnt1, pnt2, distances, predecesseurs, poids):
         predecesseurs[pnt1] = pnt2
 
 
-#Debut des algos
+
+
+        ##########################################
+        ##  Algorithmes de recherche de chemin  ##
+        ##########################################
 
 
 
+
+                ################
+                ##  Dijkstra  ##
+                ################
+                
+                
 def dijkstra(graphe, sommet_depart, sommet_arrivee):
     # Initialisation des variables ecessaire au programme
     distances = {sommet: float('inf') for sommet in graphe}
@@ -120,26 +133,24 @@ def dijkstra(graphe, sommet_depart, sommet_arrivee):
             nouvelle_distance = distances[sommet_courant] + poids
             if nouvelle_distance < distances[voisin]:
                 distances[voisin] = nouvelle_distance
-                
                 pred[voisin] = sommet_courant
+                #tracer le chemin qui a été parcouru
                 traceChemin(sommet_courant, voisin, color="orange", width=2)
+                
     chemin = reconstruire_chemin(sommet_depart, sommet_arrivee, pred)
+    #Tracer le plus court chemin trouvé
     for i in range(len(chemin) - 1):
         traceChemin(chemin[i], chemin[i + 1], color="purple", width=4)
     distance_totale = distances[sommet_arrivee]
     return chemin, round(distance_totale)
 
 
-# Exemple d'utilisation
-point1Dij, point2Dij = point_alea(dicsuccdistInt)
-print(f"Point 1 : ", point1Dij)
-print(f"Point 2 : ", point2Dij)
-chemin, distance = dijkstra(dicsuccdistInt, point1Dij, point2Dij)
-print("Chemin : ", chemin)
-print("Distance : ", distance)
-del point1Dij, point2Dij, chemin, distance
 
-
+                ###############
+                ##  Bellman  ##
+                ###############
+                
+                
 def bellman_ford(graphe, sommet_depart):
  # Initialisation
  distances = {sommet: float('inf') for sommet in graphe}
@@ -153,32 +164,18 @@ def bellman_ford(graphe, sommet_depart):
              if distances[sommet] + poids < distances[voisin]:
                  distances[voisin] = distances[sommet] + poids
                  pred[voisin] = sommet
+                 #tracer le chemin qui a été parcouru
                  traceChemin(sommet, voisin, color="red", width=2)
-
- # V√©rification de cycles de poids negatif
- for sommet in graphe:
-     for voisin, poids in graphe[sommet].items():
-         if distances[sommet] + poids < distances[voisin]:
-             raise ValueError("Le graphe contient un cycle de poids n√©gatif")
 
  return distances, pred
 
 
 
-        
-
-        
-# Exemple d'utilisation
-point1Bell, point2Bell = point_alea(dicsuccdistInt)
-print(f"Point 1 : ", point1Bell)
-print(f"Point 2 : ", point2Bell)
-distances, pred = bellman_ford(dicsuccdistInt, point1Bell)
-chemin = reconstruire_chemin( point1Bell, point2Bell, pred)
-print("Distances:", distances)
-print("Chemin du point 1 au point 2 :", chemin)
-del point1Bell, point2Bell, distances, chemin
 
 
+                #############################
+                ##  Visualisation Bellman  ##
+                #############################
 
 
 
@@ -193,7 +190,7 @@ win = g.GraphWin("Carte de Bayonne", 1412, 912)
 image = g.Image(g.Point(705, 456), chemin_image)
 image.draw(win)
 
-# représenter les coordonnées du fichier à celle de la fenetre
+# représenter les sommet par un point de couleur rouge sur la carte
 for i in range(1884):
     lat = sommets.iloc[i, 0]
     lon = sommets.iloc[i, 1]
@@ -203,40 +200,52 @@ for i in range(1884):
     cercle.setFill("red")
     cercle.draw(win)
 
-# Function to draw arcs between points
+# Fonction pour créer les chemins entre les points
 def traceChemin(point1, point2, color="black", width=1):
     lat1 = sommets.loc[point1, 'lat']
     lon1 = sommets.loc[point1, 'lon']
     lat2 = sommets.loc[point2, 'lat']
     lon2 = sommets.loc[point2, 'lon']
     
-    pt1 = g.Point((lon1 - longitudeGauche) * echelle_longitude, 
+    ptn1 = g.Point((lon1 - longitudeGauche) * echelle_longitude, 
                   (latHauteur - lat1) * echelle_latitude)
-    pt2 = g.Point((lon2 - longitudeGauche) * echelle_longitude, 
+    ptn2 = g.Point((lon2 - longitudeGauche) * echelle_longitude, 
                   (latHauteur - lat2) * echelle_latitude)
     
-    arc = g.Line(pt1, pt2)
+    arc = g.Line(ptn1, ptn2)
     arc.setFill(color)
     arc.setWidth(width)
     arc.draw(win)
 
-# Draw the arcs between the points
+# Dessiner tout les arcs entre les points
 for arc in aretes.index:
     listePoints = aretes.loc[arc, 'lstpoints']
     depart = listePoints[0]
     arrive = listePoints[-1]
     traceChemin(depart, arrive)
-    
+
+#Exécuter l'algorithme sur 2 points aléatoires du graphe 
 point1Bell, point2Bell = point_alea(dicsuccdistInt)
 distances, pred = bellman_ford(dicsuccdistInt, point1Bell)
 chemin = reconstruire_chemin( point1Bell, point2Bell, pred)
+
+#Tracer le plus court chemin trouvé
 for i in range(len(chemin) - 1):
         traceChemin(chemin[i], chemin[i + 1], color="green", width=3)
-# Pause to view result
+        
+#Afficher la fenetre qui se fermera sur un clic souris
 win.getMouse()  
 win.close()
 
 
+
+
+                ##############################
+                ##  Visualisation Dijkstra  ##
+                ##############################
+
+
+
 # Variables pour la transformation des coordonnées
 longitudeGauche = -1.48768
 echelle_longitude = 1411 / 0.0303
@@ -248,7 +257,7 @@ win = g.GraphWin("Carte de Bayonne", 1412, 912)
 image = g.Image(g.Point(705, 456), chemin_image)
 image.draw(win)
 
-# représenter les coordonnées du fichier à celle de la fenetre
+# représenter les sommet par un point de couleur rouge sur la carte
 for i in range(1884):
     lat = sommets.iloc[i, 0]
     lon = sommets.iloc[i, 1]
@@ -258,34 +267,36 @@ for i in range(1884):
     cercle.setFill("red")
     cercle.draw(win)
 
-# Function to draw arcs between points
+# Fonction pour créer les chemins entre les points
 def traceChemin(point1, point2, color="black", width=1):
     lat1 = sommets.loc[point1, 'lat']
     lon1 = sommets.loc[point1, 'lon']
     lat2 = sommets.loc[point2, 'lat']
     lon2 = sommets.loc[point2, 'lon']
     
-    pt1 = g.Point((lon1 - longitudeGauche) * echelle_longitude, 
+    ptn1 = g.Point((lon1 - longitudeGauche) * echelle_longitude, 
                   (latHauteur - lat1) * echelle_latitude)
-    pt2 = g.Point((lon2 - longitudeGauche) * echelle_longitude, 
+    ptn2 = g.Point((lon2 - longitudeGauche) * echelle_longitude, 
                   (latHauteur - lat2) * echelle_latitude)
     
-    arc = g.Line(pt1, pt2)
+    arc = g.Line(ptn1, ptn2)
     arc.setFill(color)
     arc.setWidth(width)
     arc.draw(win)
 
-# Draw the arcs between the points
+# Dessiner tout les arcs entre les points
 for arc in aretes.index:
     listePoints = aretes.loc[arc, 'lstpoints']
     depart = listePoints[0]
     arrive = listePoints[-1]
     traceChemin(depart, arrive)
+
+#Exécuter l'algorithme sur 2 points aléatoires du graphe 
 point1Dij, point2Dij = point_alea(dicsuccdistInt)
 chemin, distance = dijkstra(dicsuccdistInt, point1Dij, point2Dij)
 del point1Dij, point2Dij, chemin, distance
 
-# Pause to view result
+#Afficher la fenetre qui se fermera sur un clic souris
 win.getMouse()  
 win.close()
 
