@@ -126,7 +126,7 @@ def dijkstra(graphe, sommet_depart, sommet_arrivee):
         sommet_non_traites.remove(sommet_courant)
 
         if sommet_courant == sommet_arrivee:
-            break  # On a trouvâˆšÂ© le chemin le plus court
+            break  # On a trouvŽ le chemin le plus court
         
         for voisin, poids in graphe[sommet_courant].items():  # Utiliser .items() pour iterer sur les voisins
             # Calculer la nouvelle distance
@@ -161,11 +161,12 @@ def bellman_ford(graphe, sommet_depart):
  for _ in range(len(graphe) - 1):
      for sommet in graphe:
          for voisin, poids in graphe[sommet].items():
+             #tracer le chemin qui a Ã©tÃ© parcouru
+             traceChemin(sommet, voisin, color="red", width=2)
              if distances[sommet] + poids < distances[voisin]:
                  distances[voisin] = distances[sommet] + poids
                  pred[voisin] = sommet
-                 #tracer le chemin qui a Ã©tÃ© parcouru
-                 traceChemin(sommet, voisin, color="red", width=2)
+                 
 
  return distances, pred
 
@@ -179,7 +180,7 @@ def bellman_ford(graphe, sommet_depart):
 
 
 
-# Variables pour la transformation des coordonnÃ©es
+# Variables pour la transformation des coordonnŽes
 longitudeGauche = -1.48768
 echelle_longitude = 1411 / 0.0303
 echelle_latitude = 912 / 0.01422
@@ -190,7 +191,7 @@ win = g.GraphWin("Carte de Bayonne", 1412, 912)
 image = g.Image(g.Point(705, 456), chemin_image)
 image.draw(win)
 
-# reprÃ©senter les sommet par un point de couleur rouge sur la carte
+# reprŽsenter les sommet par un point de couleur rouge sur la carte
 for i in range(1884):
     lat = sommets.iloc[i, 0]
     lon = sommets.iloc[i, 1]
@@ -200,7 +201,7 @@ for i in range(1884):
     cercle.setFill("red")
     cercle.draw(win)
 
-# Fonction pour crÃ©er les chemins entre les points
+# Fonction pour crŽer les chemins entre les points
 def traceChemin(point1, point2, color="black", width=1):
     lat1 = sommets.loc[point1, 'lat']
     lon1 = sommets.loc[point1, 'lon']
@@ -224,12 +225,12 @@ for arc in aretes.index:
     arrive = listePoints[-1]
     traceChemin(depart, arrive)
 
-#ExÃ©cuter l'algorithme sur 2 points alÃ©atoires du graphe 
+#ExÃ©cuter l'algorithme sur 2 points alŽatoires du graphe 
 point1Bell, point2Bell = point_alea(dicsuccdistInt)
 distances, pred = bellman_ford(dicsuccdistInt, point1Bell)
 chemin = reconstruire_chemin( point1Bell, point2Bell, pred)
 
-#Tracer le plus court chemin trouvÃ©
+#Tracer le plus court chemin trouvŽ
 for i in range(len(chemin) - 1):
         traceChemin(chemin[i], chemin[i + 1], color="green", width=3)
         
@@ -246,18 +247,18 @@ win.close()
 
 
 
-# Variables pour la transformation des coordonnÃ©es
+# Variables pour la transformation des coordonnŽes
 longitudeGauche = -1.48768
 echelle_longitude = 1411 / 0.0303
 echelle_latitude = 912 / 0.01422
 latHauteur = 43.4990
  
-# CrÃ©er la fenetre et l'image
+# CrŽer la fenetre et l'image
 win = g.GraphWin("Carte de Bayonne", 1412, 912)
 image = g.Image(g.Point(705, 456), chemin_image)
 image.draw(win)
 
-# reprÃ©senter les sommet par un point de couleur rouge sur la carte
+# reprŽsenter les sommet par un point de couleur rouge sur la carte
 for i in range(1884):
     lat = sommets.iloc[i, 0]
     lon = sommets.iloc[i, 1]
@@ -267,7 +268,7 @@ for i in range(1884):
     cercle.setFill("red")
     cercle.draw(win)
 
-# Fonction pour crÃ©er les chemins entre les points
+# Fonction pour crŽer les chemins entre les points
 def traceChemin(point1, point2, color="black", width=1):
     lat1 = sommets.loc[point1, 'lat']
     lon1 = sommets.loc[point1, 'lon']
